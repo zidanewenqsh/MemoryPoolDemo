@@ -121,6 +121,28 @@ void MemoryPool::deallocate(void* block) {
     spinlock.clear(std::memory_order_release); // 释放锁
 }
 
+void MemoryPool::deallocate(void* block, size_t size) {
+    // ... deallocate 的实现 ...
+    if (stop.load()) {
+        return ; // 如果内存池已停止，直接返回
+    }
+    while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
+    int sizeindex = (static_cast<int>(size) + 0x1000 - 1) / 0x1000;
+    auto it = largePools.find(sizeindex);
+    if (it == largePools.end()) {
+        spinlock.clear(std::memory_order_release); // 释放锁
+        return;
+    }
+    for (auto& blockInPool : it->second.blocks) {
+        if (blockInPool.memory == block) {
+            blockInPool.inUse = false; // 标记为未使用
+            std::cout << "deallocate " << block << " size: " << size << std::endl;
+            spinlock.clear(std::memory_order_release); // 释放锁
+            return;
+        }
+    }
+    spinlock.clear(std::memory_order_release); // 释放锁
+}
 void MemoryPool::stopPool() {
     // ... stopPool 的实现 ...
     // stop.store(1); // 设置停止标志

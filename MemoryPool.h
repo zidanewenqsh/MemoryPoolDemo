@@ -23,6 +23,7 @@ public:
 
     void* allocate(size_t size);
     void deallocate(void* block);
+    void deallocate(void* block, size_t size);
     void stopPool();
 
 private:
