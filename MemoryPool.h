@@ -13,6 +13,7 @@
 #include <chrono>
 #include <atomic>
 #include <map>
+#include "Logger.h"
 // ... 可能还需要包含其他头文件 ...
 
 class MemoryPool {
@@ -25,8 +26,9 @@ public:
     void deallocate(void* block);
     void deallocate(void* block, size_t size);
     void stopPool();
-
+    void SetLogLevel(LogLevel level);
 private:
+    Logger logger;
     struct LargeMemoryBlock {
         void* memory = nullptr;
         bool inUse = false;
@@ -53,7 +55,8 @@ private:
         char* nextAvailable;
         size_t freeSize;
         size_t totalSize;
-        SmallMemoryBlock() : memory(nullptr), nextAvailable(nullptr), freeSize(0), totalSize(0) {}
+        int usedCount;
+        SmallMemoryBlock() : memory(nullptr), nextAvailable(nullptr), freeSize(0), totalSize(0), usedCount(0) {}
     };
 
     // ... 其他私有成员变量和方法的声明 ...

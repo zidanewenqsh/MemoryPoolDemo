@@ -28,7 +28,7 @@ RBTree::NodePtr RBTree::NIL = std::make_shared<RBTree::Node>(Data{0, 0});
 //}
 
 void RBTree::clear(RBTree::NodePtr root) {
-    if (root == RBTree::NIL) return;
+    if (root == NIL) return;
     clear(root->lchild);
     clear(root->rchild);
 //    free(root);
@@ -37,18 +37,18 @@ void RBTree::clear(RBTree::NodePtr root) {
 }
 
 void RBTree::clear() {
-    RBTree::clear(RBTree::root);
-    RBTree::root = RBTree::NIL;
+    clear(root);
+    root = NIL;
     return;
 }
 
 void RBTree::insert(Data data) {
-    RBTree::root = RBTree::insert(RBTree::root, data);
+    root = insert(root, data);
     root->color = 1;
     return;
 }
 void RBTree::erase(int key) {
-    RBTree::root = RBTree::erase(RBTree::root, key);
+    root = erase(root, key);
     root->color = 1;
     return;
 }

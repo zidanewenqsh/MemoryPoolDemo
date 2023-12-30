@@ -47,11 +47,11 @@ public:
     using NodePtr = std::shared_ptr<Node>;
     static std::shared_ptr<Node> NIL;
     // 静态初始化函数
-    static void initNIL() {
-        NIL = std::make_shared<Node>(Data());
-        NIL->color = 1; // NIL 节点通常是黑色的
-        NIL->lchild = NIL->rchild = NIL;
-    }
+//    static void initNIL() {
+//        NIL = std::make_shared<Node>(Data());
+//        NIL->color = 1; // NIL 节点通常是黑色的
+//        NIL->lchild = NIL->rchild = NIL;
+//    }
     RBTree() : root(NIL) {}
     void insert(Data data);
     void erase(int key);
