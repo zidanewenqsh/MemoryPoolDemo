@@ -2,7 +2,7 @@
 // Created by wen on 2023-12-29.
 //
 
-#include "MemoryPool.h"
+#include "MemoryPool_v0.h"
 MemoryPool::MemoryPool():stop(false) {
     smallSize = 0x100;
     smallPoolSize = smallSize * 0x10;
@@ -10,12 +10,10 @@ MemoryPool::MemoryPool():stop(false) {
     int i = 1, small_size = smallSize;
     while (small_size >>=1) i++;
     // printf("i=%d\n", i);
-#if 0
     size_t blockSize = 1 << i;
     largeBlockSizes.push_back(blockSize);
 //    largePools.push_back({{}, blockSize}); // 为每个大小创建一个空内存池
     largePools.emplace_back(blockSize);
-#endif
 }
 MemoryPool::MemoryPool(size_t small_size, int small_count)
         : stop(false), smallSize(small_size), smallPoolSize(smallSize * small_count) {
@@ -28,14 +26,11 @@ MemoryPool::MemoryPool(size_t small_size, int small_count)
 //    while (small_size >>=1) i++;
     // printf("i=%d\n", i);
 //    size_t blockSize = 1 << i;
-#if 0
     size_t blockSize = 0x1000;
     largeBlockSizes.push_back(blockSize);
-#else
-#endif
 //    largePools.push_back({{}, blockSize}); // 为每个大小创建一个空内存池
 //    largePools.emplace_back(LargePool{{}, blockSize});
-//    largePools.emplace_back(blockSize);
+    largePools.emplace_back(blockSize);
 
 }
 
@@ -50,7 +45,6 @@ MemoryPool::~MemoryPool() {
         }
     }
     // 释放所有大块内存
-#if 0
     for (auto& pool : largePools) {
         for (auto& block : pool.blocks) {
             if (block.memory != nullptr) {
@@ -62,16 +56,6 @@ MemoryPool::~MemoryPool() {
             }
         }
     }
-#else
-    for (auto& pool : largePools) {
-        for (auto& block : pool.second.blocks) {
-            if (block.memory != nullptr) {
-                delete[] reinterpret_cast<char*>(block.memory);
-            }
-        }
-    }
-
-#endif
 }
 
 void* MemoryPool::allocate(size_t size) {
@@ -95,7 +79,6 @@ void MemoryPool::deallocate(void* block) {
     }
     while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
     // 检查是否为大块内存
-#if 0
     for (auto& pool : largePools) {
         for (auto& blockInPool : pool.blocks) {
             if (blockInPool.memory == block) {
@@ -106,18 +89,6 @@ void MemoryPool::deallocate(void* block) {
             }
         }
     }
-#else
-    for (auto& pool : largePools) {
-        for (auto& blockInPool : pool.second.blocks) {
-            if (blockInPool.memory == block) {
-                blockInPool.inUse = false; // 标记为未使用
-                std::cout << "deallocate " << block << std::endl;
-                spinlock.clear(std::memory_order_release); // 释放锁
-                return;
-            }
-        }
-    }
-#endif
     spinlock.clear(std::memory_order_release); // 释放锁
 }
 
@@ -167,7 +138,6 @@ void* MemoryPool::allocateSmall(size_t size) {
 void* MemoryPool::allocateLarge(size_t size) {
     std::cout << "allocateLarge " << size << std::endl;
     // ... allocateLarge 的实现 ...
-#if 0
     while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
     // 如果预设的largeBlockSize不满足要求，扩容
     while (size > largeBlockSizes.back()) {
@@ -202,30 +172,4 @@ void* MemoryPool::allocateLarge(size_t size) {
     }
     spinlock.clear(std::memory_order_release); // 释放锁
     throw std::bad_alloc();
-#else
-    while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
-//    size_t mapsize = (size + 4096 - 1) / 4096;
-    int sizeindex = (static_cast<int>(size) + 0x1000 - 1) / 0x1000;
-    auto it = largePools.find(sizeindex);
-    if (it == largePools.end()) {
-//        largePools.emplace(sizeindex, LargePool(sizeindex * 4096));
-        largePools.emplace(sizeindex, static_cast<size_t>(sizeindex * 0x1000));
-    }
-//    largePools[sizeindex];
-    for (auto& block : largePools[sizeindex].blocks) {
-        if (!block.inUse) {
-            block.inUse = true;
-            spinlock.clear(std::memory_order_release); // 释放锁
-            return block.memory;
-        }
-    }
-    LargeMemoryBlock newBlock;
-    char *newmemory = new char[sizeindex * 0x1000]; // 使用 new 分配内存
-    newBlock.memory = newmemory; // 使用 new 分配内存
-    newBlock.inUse = true;
-    largePools[sizeindex].blocks.push_back(newBlock);
-    spinlock.clear(std::memory_order_release); // 释放锁
-    return newBlock.memory;
-#endif
-//    return nullptr;
 }

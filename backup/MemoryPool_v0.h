@@ -12,7 +12,6 @@
 #include <memory>
 #include <chrono>
 #include <atomic>
-#include <map>
 // ... 可能还需要包含其他头文件 ...
 
 class MemoryPool {
@@ -36,14 +35,10 @@ private:
         std::vector<LargeMemoryBlock> blocks;
         size_t blockSize;
         // 修改构造函数，只接受 blockSize 作为参数
-//        explicit LargePool(size_t size) : blockSize(size) {
-        LargePool() : blockSize(4096) {
-            std::cout << "LargePool::LargePool(size_t size) : blockSize(size) default: " << 4096 << std::endl;
-        }
-        LargePool(size_t size) : blockSize(size) {
+        explicit LargePool(size_t size) : blockSize(size) {
             // 将一个空的 LargeMemoryBlock 对象添加到 blocks 中
 //            blocks.emplace_back();
-            std::cout << "LargePool::LargePool(size_t size) : blockSize(size) " << size << std::endl;
+            std::cout << "LargePool::LargePool(size_t size) : blockSize(size) " << blocks.size() << std::endl;
         }
     };
 
@@ -62,11 +57,7 @@ private:
     std::atomic_flag spinlock = ATOMIC_FLAG_INIT;
     size_t smallSize;
     size_t smallPoolSize;
-#if 0
     std::vector<LargePool> largePools;
-#else
-    std::map<size_t, LargePool> largePools;
-#endif
     std::vector<size_t> largeBlockSizes;
     std::vector<SmallMemoryBlock> smallPools;
 
