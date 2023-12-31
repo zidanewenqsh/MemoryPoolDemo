@@ -16,7 +16,7 @@
 #include "Logger.h"
 // ... 可能还需要包含其他头文件 ...
 
-class MemoryPool : public Logger {
+class MemoryPool {
 public:
     MemoryPool();
     MemoryPool(size_t small_size, int small_count);
@@ -26,12 +26,9 @@ public:
     void deallocate(void* block);
     void deallocate(void* block, size_t size);
     void stopPool();
-//    void SetLogLevel(LogLevel level);
+    void SetLogLevel(LogLevel level);
 private:
-//    Logger logger;
-
-
-
+    Logger logger;
     struct LargeMemoryBlock {
         void* memory = nullptr;
         bool inUse = false;
@@ -46,7 +43,7 @@ private:
         LargePool() : blockSize(4096) {
             std::cout << "LargePool::LargePool(size_t size) : blockSize(size) default: " << 4096 << std::endl;
         }
-        explicit LargePool(size_t size) : blockSize(size) {
+        LargePool(size_t size) : blockSize(size) {
             // 将一个空的 LargeMemoryBlock 对象添加到 blocks 中
 //            blocks.emplace_back();
             std::cout << "LargePool::LargePool(size_t size) : blockSize(size) " << size << std::endl;
@@ -83,15 +80,5 @@ private:
     // ... 其他私有成员函数的声明 ...
 };
 
-//#define LOG_DEBUG(message) Log(logger, LogLevel::DEBUG, message)
-//#define LOG_INFO(message) Log(logger, LogLevel::INFO, message)
-//#define LOG_WARNING(message) Log(logger, LogLevel::WARNING, message)
-//#define LOG_ERROR(message) Log(logger, LogLevel::ERROR, message)
-//#define LOG_FATAL(message) Log(logger, LogLevel::FATAL, message)
-//#define LOGDEBUG(format, ...) Log(LogLevel::DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGINFO(format, ...) Log(LogLevel::INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGWARNING(format, ...) Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGERROR(format, ...) Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGFATAL(format, ...) Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 
 #endif //MEMORYPOOLDEMO_MEMORYPOOL_H

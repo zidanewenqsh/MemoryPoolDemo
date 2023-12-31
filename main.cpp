@@ -19,7 +19,7 @@ int main() {
     MemoryPool pool(1024, 10);
     std::vector<void *> ptrs;
     std::vector<Info> infos;
-    pool.SetLogLevel(LogLevel::ERROR);
+//    pool.SetLevel(LogLevel::ERROR);
 #if 0 // test 1测试大块内存
     for (int i = 0; i < 10; i++) {
         int size = (i % 3 + 1)*0x1000 + 1;

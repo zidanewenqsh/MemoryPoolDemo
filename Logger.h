@@ -34,6 +34,30 @@ public:
              const char* file, int line, const char* func);
     void Log(LogLevel level, const char* file, int line, const char* func, const char* format, ...);
 
+    template<typename... Args>
+    inline void LogDebug(const char* format, Args... args) {
+        Log(LogLevel::DEBUG, __FILE__, __LINE__, __FUNCTION__, format, args...);
+    }
+
+    template<typename... Args>
+    inline void LogInfo(const char* format, Args... args) {
+        Log(LogLevel::INFO, __FILE__, __LINE__, __FUNCTION__, format, args...);
+    }
+
+    template<typename... Args>
+    inline void LogWarning(const char* format, Args... args) {
+        Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, args...);
+    }
+
+    template<typename... Args>
+    inline void LogError(const char* format, Args... args) {
+        Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, args...);
+    }
+
+    template<typename... Args>
+    inline void LogFatal(const char* format, Args... args) {
+        Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, args...);
+    }
 private:
     std::ostream* out_stream;
     std::mutex mu;
@@ -66,11 +90,11 @@ private:
 //#define LOGWARNING(logger, format, ...) logger.Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 //#define LOGERROR(logger, format, ...) logger.Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 //#define LOGFATAL(logger, format, ...) logger.Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define LOGDEBUG(format, ...) logger.Log(LogLevel::DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define LOGINFO(format, ...) logger.Log(LogLevel::INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define LOGWARNING(format, ...) logger.Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define LOGERROR(format, ...) logger.Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define LOGFATAL(format, ...) logger.Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//#define LOGDEBUG(format, ...) logger.Log(LogLevel::DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//#define LOGINFO(format, ...) logger.Log(LogLevel::INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//#define LOGWARNING(format, ...) logger.Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//#define LOGERROR(format, ...) logger.Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//#define LOGFATAL(format, ...) logger.Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 // ... [其他宏定义]
 
 #endif //MEMORYPOOL_LOGGER_H

@@ -2,22 +2,12 @@
 // Created by wen on 2023-12-29.
 //
 
-#include "MemoryPool.h"
-//#define LOG_DEBUG(message) Log(logger, LogLevel::DEBUG, message)
-//#define LOG_INFO(message) Log(logger, LogLevel::INFO, message)
-//#define LOG_WARNING(message) Log(logger, LogLevel::WARNING, message)
-//#define LOG_ERROR(message) Log(logger, LogLevel::ERROR, message)
-//#define LOG_FATAL(message) Log(logger, LogLevel::FATAL, message)
-//#define LOGDEBUG(format, ...) Log(LogLevel::DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LogInfo(format, ...) Log(LogLevel::INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGWARNING(format, ...) Log(LogLevel::WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGERROR(format, ...) Log(LogLevel::ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#define LOGFATAL(format, ...) Log(LogLevel::FATAL, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-//#include "Logger.h"
+#include "MemoryPool_v2.h"
+#include "Logger.h"
 //static Logger logger;
-//void MemoryPool::SetLogLevel(LogLevel level) {
-//    logger.SetLevel(level);
-//}
+void MemoryPool::SetLogLevel(LogLevel level) {
+    logger.SetLevel(level);
+}
 //logger.SetLevel(LogLevel::DEBUG);
 //Logger.setLevel(LogLevel::ERROR);
 //logger.SetLevel(LogLevel::DEBUG);
@@ -28,8 +18,6 @@ MemoryPool::MemoryPool():stop(false) {
     int i = 1, small_size = smallSize;
     while (small_size >>=1) i++;
     // printf("i=%d\n", i);
-
-
 #if 0
     size_t blockSize = 1 << i;
     largeBlockSizes.push_back(blockSize);
@@ -133,8 +121,7 @@ void MemoryPool::deallocate(void* block) {
             if (blockInPool.memory == block) {
                 blockInPool.inUse = false; // 标记为未使用
 //                std::cout << "deallocate " << block << std::endl;
-//                LogInfo("deallocate %p", block);
-                LogInfo("deallocate %p", block);
+                LOGINFO("deallocate %p", block);
                 spinlock.clear(std::memory_order_release); // 释放锁
                 return;
             }
@@ -160,8 +147,7 @@ void MemoryPool::deallocate(void* block, size_t size) {
                     blockInPool.freeSize = blockInPool.totalSize;
                 }
 //                std::cout << "deallocate small " << block << " size: " << size << std::endl;
-//                LogInfo("deallocate small %p size: %d", block, size);
-                LogInfo("deallocate small %p size: %d", block, size);
+                LOGINFO("deallocate small %p size: %d", block, size);
                 spinlock.clear(std::memory_order_release); // 释放锁
                 return;
             }
@@ -177,8 +163,7 @@ void MemoryPool::deallocate(void* block, size_t size) {
             if (blockInPool.memory == block) {
                 blockInPool.inUse = false; // 标记为未使用
 //                std::cout << "deallocate large " << block << " size: " << size << std::endl;
-//                LogInfo("deallocate large %p size: %d", block, size);
-                LogInfo("deallocate large %p size: %d", block, size);
+                LOGINFO("deallocate large %p size: %d", block, size);
                 spinlock.clear(std::memory_order_release); // 释放锁
                 return;
             }
@@ -195,7 +180,7 @@ void MemoryPool::stopPool() {
 void MemoryPool::addSmallBlock(size_t size) {
     // ... addSmallBlock 的实现 ...
 //    std::cout << "addSmallBlock " << size << std::endl;
-    LogInfo("addSmallBlock %d", size);
+    LOGINFO("addSmallBlock %d", size);
     SmallMemoryBlock newBlock;
     newBlock.totalSize = size;
     newBlock.freeSize = size;
@@ -205,7 +190,7 @@ void MemoryPool::addSmallBlock(size_t size) {
 }
 void* MemoryPool::allocateSmall(size_t size) {
 //    std::cout << "allocateSmall " << size << std::endl;
-//    LogInfo("allocateSmall %d", size);
+    LOGINFO("allocateSmall %d", size);
     // ... allocateSmall 的实现 ...
     while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
 
@@ -217,7 +202,6 @@ void* MemoryPool::allocateSmall(size_t size) {
             block.freeSize -= size;
             block.usedCount++;
             spinlock.clear(std::memory_order_release); // 释放锁
-            LogInfo("allocateSmall %d, %p", size, allocatedMemory);
             return allocatedMemory;
         }
     }
@@ -232,13 +216,12 @@ void* MemoryPool::allocateSmall(size_t size) {
     newBlock.freeSize -= size;
 
     spinlock.clear(std::memory_order_release); // 释放锁
-    LogInfo("allocateSmall %d, %p", size, allocatedMemory);
     return allocatedMemory;
 }
 
 void* MemoryPool::allocateLarge(size_t size) {
 //    std::cout << "allocateLarge " << size << std::endl;
-//    LogInfo("allocateLarge %yyd", size);
+    LOGINFO("allocateLarge %d", size);
     // ... allocateLarge 的实现 ...
 #if 0
     while (spinlock.test_and_set(std::memory_order_acquire)); // 获取锁
@@ -289,7 +272,6 @@ void* MemoryPool::allocateLarge(size_t size) {
         if (!block.inUse) {
             block.inUse = true;
             spinlock.clear(std::memory_order_release); // 释放锁
-            LogInfo("allocateLarge %yyd, %p", size, block.memory);
             return block.memory;
         }
     }
@@ -299,7 +281,6 @@ void* MemoryPool::allocateLarge(size_t size) {
     newBlock.inUse = true;
     largePools[sizeindex].blocks.push_back(newBlock);
     spinlock.clear(std::memory_order_release); // 释放锁
-    LogInfo("allocateLarge %yyd, %p", size, newmemory);
     return newBlock.memory;
 #endif
 //    return nullptr;
